@@ -1,0 +1,57 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    ext.kotlin_version = '1.8.0'
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
+    }
+    dependencies {
+        classpath libs.gradle
+        classpath libs.aboutlibraries.plugin
+        classpath libs.kotlin.gradle.plugin
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+plugins {
+    alias libs.plugins.detekt
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+subprojects {
+    detekt {
+        source = files(
+                "src/main/java"
+        )
+
+        toolVersion = "1.23.1"
+        config.setFrom("detekt.yml")
+        baseline = file("detekt-baseline.xml")
+        parallel = false
+        buildUponDefaultConfig = true
+        allRules = false
+        disableDefaultRuleSets = false
+        debug = false
+        ignoreFailures = false
+        basePath = projectDir
+    }
+}
+
+dependencies {
+    detektPlugins libs.detekt.formatting
+}
