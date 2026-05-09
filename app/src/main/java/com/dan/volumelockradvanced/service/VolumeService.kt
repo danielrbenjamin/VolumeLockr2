@@ -1,4 +1,4 @@
-package com.klee.volumelockr.service
+package com.dan.volumelockradvanced.service
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -21,19 +21,19 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.WorkerThread
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.dan.volumelockradvanced.R
+import com.dan.volumelockradvanced.ui.MainActivity
+import com.dan.volumelockradvanced.ui.SettingsFragment.Companion.ALLOW_LOWER_PREFERENCE
+import com.dan.volumelockradvanced.ui.Volume
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.klee.volumelockr.R
-import com.klee.volumelockr.ui.MainActivity
-import com.klee.volumelockr.ui.SettingsFragment.Companion.ALLOW_LOWER_PREFERENCE
-import com.klee.volumelockr.ui.Volume
 import java.util.Timer
 import java.util.TimerTask
 
 class VolumeService : Service() {
 
     companion object {
-        const val NOTIFICATION_TITLE = "VolumeLockr"
+        const val NOTIFICATION_TITLE = "VolumeLockr Advanced"
         const val NOTIFICATION_DESCRIPTION = "Service is running in background"
         const val NOTIFICATION_CHANNEL_ID = "VolumeService"
         const val NOTIFICATION_ID = 4455
@@ -67,7 +67,7 @@ class VolumeService : Service() {
 
         fun loadStoredDeviceNames(context: Context): List<String> {
             val prefs = context.getSharedPreferences(APP_SHARED_PREFERENCES, Context.MODE_PRIVATE)
-            val json = prefs.getString(LOCKS_KEY, "") ?: return emptyList()
+            val json = prefs.getString(LOCKS_KEY, "").orEmpty()
             if (json.isBlank()) return emptyList()
             val type = object : TypeToken<HashMap<String, HashMap<Int, Int>>>() {}.type
             val locks: HashMap<String, HashMap<Int, Int>> = Gson().fromJson(json, type)
@@ -253,17 +253,13 @@ class VolumeService : Service() {
 
     @Suppress("DEPRECATION")
     private fun getActiveDeviceType(): String {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (mAudioManager.isBluetoothA2dpOn) {
-                val btDevice = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-                    .firstOrNull {
-                        it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && mAudioManager.isBluetoothA2dpOn) {
+            val btDevice = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                .firstOrNull {
+                    it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
                         it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
-                    }
-                return btDevice?.productName?.toString()?.takeIf { it.isNotBlank() } ?: "Bluetooth"
-            }
-            if (mAudioManager.isWiredHeadsetOn) return "Headphones"
-            return "Speaker"
+                }
+            return btDevice?.productName?.toString()?.takeIf { it.isNotBlank() } ?: "Bluetooth"
         }
         return when {
             mAudioManager.isBluetoothA2dpOn -> "Bluetooth"

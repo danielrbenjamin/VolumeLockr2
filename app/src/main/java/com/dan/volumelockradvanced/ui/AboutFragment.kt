@@ -1,4 +1,4 @@
-package com.klee.volumelockr.ui
+package com.dan.volumelockradvanced.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.klee.volumelockr.R
+import com.dan.volumelockradvanced.R
 import com.mikepenz.aboutlibraries.LibsBuilder
 
 class AboutFragment : Fragment() {

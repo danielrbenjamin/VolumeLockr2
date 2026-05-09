@@ -1,4 +1,4 @@
-package com.klee.volumelockr.ui
+package com.dan.volumelockradvanced.ui
 
 import android.app.NotificationManager
 import android.os.Build
@@ -11,9 +11,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import com.dan.volumelockradvanced.R
+import com.dan.volumelockradvanced.databinding.ActivityMainBinding
 import com.google.android.material.navigation.NavigationBarView
-import com.klee.volumelockr.R
-import com.klee.volumelockr.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

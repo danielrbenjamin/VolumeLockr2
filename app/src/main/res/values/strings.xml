@@ -1,11 +1,11 @@
 <resources>
-    <string name="app_name">VolumeLockr</string>
-    <string name="title">VolumeLockr</string>
+    <string name="app_name">VolumeLockr Advanced</string>
+    <string name="title">VolumeLockr Advanced</string>
     <string name="lock">Lock</string>
     <string name="options">Options</string>
     <string name="about">About</string>
     <string name="home">Home</string>
-    <string name="dialog_policy_access_title">To detect Ringer Mode changes (Silent, Vibrate, Normal), VolumeLockr needs \"Do Not Disturb\" access.</string>
+    <string name="dialog_policy_access_title">To detect Ringer Mode changes (Silent, Vibrate, Normal), VolumeLockr Advanced needs \"Do Not Disturb\" access.</string>
     <string name="dialog_allow">Allow</string>
 
     <string name="media_title">Media</string>
@@ -23,7 +23,7 @@
     <string name="limiting_header">Volume Limits</string>
     <string name="allow_lower">Allow lowering volume</string>
 
-    <string name="aboutLibraries_description_text">VolumeLockr</string>
+    <string name="aboutLibraries_description_text">VolumeLockr Advanced</string>
     <string name="device_label">Device</string>
     <string name="device_history_header">Devices</string>
     <string name="device_history_title">Saved device profiles</string>

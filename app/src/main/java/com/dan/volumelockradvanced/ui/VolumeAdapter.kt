@@ -1,4 +1,4 @@
-package com.klee.volumelockr.ui
+package com.dan.volumelockradvanced.ui
 
 import android.content.Context
 import android.media.AudioManager
@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import androidx.annotation.MainThread
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
+import com.dan.volumelockradvanced.databinding.VolumeCardBinding
+import com.dan.volumelockradvanced.service.VolumeService
 import com.google.android.material.slider.Slider
-import com.klee.volumelockr.databinding.VolumeCardBinding
-import com.klee.volumelockr.service.VolumeService
 
 class VolumeAdapter(
     private var mVolumeList: List<Volume>,
@@ -44,7 +44,8 @@ class VolumeAdapter(
         val volume = mVolumeList[position]
         holder.binding.mediaTextView.text = volume.name
         holder.binding.speakerTextView.text = volume.deviceType
-        holder.binding.slider.value = mService?.getLocks(volume.deviceType)?.get(volume.stream)?.toFloat() ?: volume.value.toFloat()
+        val lockedValue = mService?.getLocks(volume.deviceType)?.get(volume.stream)
+        holder.binding.slider.value = lockedValue?.toFloat() ?: volume.value.toFloat()
         holder.binding.slider.valueFrom = volume.min.toFloat()
         holder.binding.slider.valueTo = volume.max.toFloat()
 

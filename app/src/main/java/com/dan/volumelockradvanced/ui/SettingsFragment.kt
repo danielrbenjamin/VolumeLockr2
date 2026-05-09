@@ -1,4 +1,4 @@
-package com.klee.volumelockr.ui
+package com.dan.volumelockradvanced.ui
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -14,10 +14,10 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import com.dan.volumelockradvanced.R
+import com.dan.volumelockradvanced.service.VolumeService
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
-import com.klee.volumelockr.R
-import com.klee.volumelockr.service.VolumeService
 import java.io.IOException
 import java.security.GeneralSecurityException
 

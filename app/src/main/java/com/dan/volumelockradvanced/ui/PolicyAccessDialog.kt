@@ -1,4 +1,4 @@
-package com.klee.volumelockr.ui
+package com.dan.volumelockradvanced.ui
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.DialogFragment
-import com.klee.volumelockr.R
+import com.dan.volumelockradvanced.R
 
 class PolicyAccessDialog : DialogFragment() {
     companion object {

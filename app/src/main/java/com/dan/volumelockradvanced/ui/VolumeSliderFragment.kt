@@ -1,4 +1,4 @@
-package com.klee.volumelockr.ui
+package com.dan.volumelockradvanced.ui
 
 import android.content.ComponentName
 import android.content.Context
@@ -13,9 +13,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
-import com.klee.volumelockr.R
-import com.klee.volumelockr.databinding.FragmentVolumeSliderBinding
-import com.klee.volumelockr.service.VolumeService
+import com.dan.volumelockradvanced.R
+import com.dan.volumelockradvanced.databinding.FragmentVolumeSliderBinding
+import com.dan.volumelockradvanced.service.VolumeService
 
 class VolumeSliderFragment : Fragment() {
 
