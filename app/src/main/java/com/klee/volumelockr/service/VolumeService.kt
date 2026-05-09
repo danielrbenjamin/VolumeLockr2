@@ -8,6 +8,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.database.ContentObserver
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Binder
@@ -63,10 +64,30 @@ class VolumeService : Service() {
                 context.startService(service)
             }
         }
+
+        fun loadStoredDeviceNames(context: Context): List<String> {
+            val prefs = context.getSharedPreferences(APP_SHARED_PREFERENCES, Context.MODE_PRIVATE)
+            val json = prefs.getString(LOCKS_KEY, "") ?: return emptyList()
+            if (json.isBlank()) return emptyList()
+            val type = object : TypeToken<HashMap<String, HashMap<Int, Int>>>() {}.type
+            val locks: HashMap<String, HashMap<Int, Int>> = Gson().fromJson(json, type)
+            return locks.keys.sorted()
+        }
+
+        fun removeStoredDevice(context: Context, deviceName: String) {
+            val prefs = context.getSharedPreferences(APP_SHARED_PREFERENCES, Context.MODE_PRIVATE)
+            val json = prefs.getString(LOCKS_KEY, "") ?: return
+            if (json.isBlank()) return
+            val type = object : TypeToken<HashMap<String, HashMap<Int, Int>>>() {}.type
+            val locks: HashMap<String, HashMap<Int, Int>> = Gson().fromJson(json, type)
+            locks.remove(deviceName)
+            prefs.edit().putString(LOCKS_KEY, Gson().toJson(locks)).apply()
+        }
     }
 
     private lateinit var mAudioManager: AudioManager
     private lateinit var mVolumeProvider: VolumeProvider
+    private lateinit var mAppPrefs: android.content.SharedPreferences
     private var mVolumeListenerHandler: Handler? = null
     private var mVolumeListener: (() -> Unit)? = null
     private var mModeListener: (() -> Unit)? = null
@@ -77,11 +98,20 @@ class VolumeService : Service() {
     private var mAllowLower = false
     private var mAllowLowerListener: (() -> Unit)? = null
 
+    private val mLocksChangeListener =
+        android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == LOCKS_KEY) {
+                reloadLocks()
+            }
+        }
+
     override fun onCreate() {
         super.onCreate()
 
         mAudioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         mVolumeProvider = VolumeProvider(this)
+        mAppPrefs = getSharedPreferences(APP_SHARED_PREFERENCES, MODE_PRIVATE)
+        mAppPrefs.registerOnSharedPreferenceChangeListener(mLocksChangeListener)
 
         loadPreferences()
 
@@ -179,39 +209,66 @@ class VolumeService : Service() {
     }
 
     private fun savePreferences() {
-        val sharedPreferences = getSharedPreferences(APP_SHARED_PREFERENCES, MODE_PRIVATE)
-        sharedPreferences.edit {
+        mAppPrefs.edit {
             putString(LOCKS_KEY, Gson().toJson(mVolumeLocks))
         }
     }
 
     private fun loadPreferences() {
-        val sharedPreferences = getSharedPreferences(APP_SHARED_PREFERENCES, MODE_PRIVATE)
         class Token : TypeToken<HashMap<String, HashMap<Int, Int>>>()
-        val value = sharedPreferences.getString(LOCKS_KEY, "")
+        val value = mAppPrefs.getString(LOCKS_KEY, "")
         if (value.isNullOrBlank()) {
             return
         }
-
         mVolumeLocks = Gson().fromJson(value, Token().type)
         startLocking()
+    }
+
+    @Synchronized
+    private fun reloadLocks() {
+        class Token : TypeToken<HashMap<String, HashMap<Int, Int>>>()
+        val value = mAppPrefs.getString(LOCKS_KEY, "")
+        mVolumeLocks = if (value.isNullOrBlank()) {
+            HashMap()
+        } else {
+            Gson().fromJson(value, Token().type)
+        }
+        if (mVolumeLocks.values.all { it.isEmpty() }) {
+            stopLocking()
+        }
     }
 
     @WorkerThread
     @Synchronized
     private fun checkVolumes() {
-        val deviceType = when {
-            mAudioManager.isWiredHeadsetOn -> "Headphones"
-            mAudioManager.isBluetoothA2dpOn -> "Bluetooth"
-            else -> "Speaker"
-        }
-
+        val deviceType = getActiveDeviceType()
         for ((stream, volume) in getLocks(deviceType)) {
             val current = mAudioManager.getStreamVolume(stream)
             if ((current > volume) || (!mAllowLower && current != volume)) {
                 mAudioManager.setStreamVolume(stream, volume, 0)
                 invokeVolumeListenerCallback()
             }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun getActiveDeviceType(): String {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (mAudioManager.isBluetoothA2dpOn) {
+                val btDevice = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                    .firstOrNull {
+                        it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                        it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                    }
+                return btDevice?.productName?.toString()?.takeIf { it.isNotBlank() } ?: "Bluetooth"
+            }
+            if (mAudioManager.isWiredHeadsetOn) return "Headphones"
+            return "Speaker"
+        }
+        return when {
+            mAudioManager.isBluetoothA2dpOn -> "Bluetooth"
+            mAudioManager.isWiredHeadsetOn -> "Headphones"
+            else -> "Speaker"
         }
     }
 
@@ -333,6 +390,7 @@ class VolumeService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mAppPrefs.unregisterOnSharedPreferenceChangeListener(mLocksChangeListener)
         unregisterObservers()
         stopLocking()
     }

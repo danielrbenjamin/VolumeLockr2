@@ -24,4 +24,12 @@
     <string name="allow_lower">Allow lowering volume</string>
 
     <string name="aboutLibraries_description_text">VolumeLockr</string>
+    <string name="device_label">Device</string>
+    <string name="device_history_header">Devices</string>
+    <string name="device_history_title">Saved device profiles</string>
+    <string name="device_history_summary">View and remove stored volume profiles</string>
+    <string name="device_history_empty">No saved device profiles</string>
+    <string name="device_delete_title">Delete profile</string>
+    <string name="device_delete_message">Remove saved profile for &#8220;%s&#8221;?</string>
+    <string name="delete">Delete</string>
 </resources>

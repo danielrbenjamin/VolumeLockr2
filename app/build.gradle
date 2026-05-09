@@ -1,13 +1,11 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.kapt' apply false
-    id 'kotlin-android'
     id 'com.mikepenz.aboutlibraries.plugin'
 }
 
 android {
     compileSdk 36
-    buildToolsVersion "30.0.3"
+    buildToolsVersion "36.0.0"
 
     defaultConfig {
         applicationId "com.klee.volumelockr"
@@ -26,12 +24,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = '1.8'
+    kotlin {
+        jvmToolchain(17)
     }
 
     buildFeatures {

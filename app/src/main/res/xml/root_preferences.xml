@@ -21,4 +21,14 @@
 
   </PreferenceCategory>
 
+
+  <PreferenceCategory app:title="@string/device_history_header">
+
+    <Preference
+        app:key="manage_devices"
+        app:title="@string/device_history_title"
+        app:summary="@string/device_history_summary" />
+
+  </PreferenceCategory>
+
 </PreferenceScreen>

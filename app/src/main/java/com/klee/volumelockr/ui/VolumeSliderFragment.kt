@@ -11,6 +11,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import androidx.fragment.app.Fragment
 import com.klee.volumelockr.R
 import com.klee.volumelockr.databinding.FragmentVolumeSliderBinding
@@ -23,6 +24,7 @@ class VolumeSliderFragment : Fragment() {
     private var mAdapter: VolumeAdapter? = null
     private var mService: VolumeService? = null
     private var isServiceBound = false
+    private var mSelectedDevice: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,11 +56,34 @@ class VolumeSliderFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun setupRecyclerView(service: VolumeService) {
+    private fun setupRecyclerView(volumes: List<Volume>) {
         val spanCount = if (resources.getBoolean(R.bool.use_two_columns)) 2 else 1
-        binding.recyclerView.layoutManager = androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
-        mAdapter = VolumeAdapter(service.getVolumes(), service, requireContext())
+        binding.recyclerView.layoutManager =
+            androidx.recyclerview.widget.GridLayoutManager(requireContext(), spanCount)
+        mAdapter = VolumeAdapter(volumes, mService, requireContext())
         binding.recyclerView.adapter = mAdapter
+    }
+
+    private fun setupDeviceDropdown(allVolumes: List<Volume>) {
+        val deviceTypes = allVolumes.map { it.deviceType }.distinct()
+
+        if (mSelectedDevice == null || mSelectedDevice !in deviceTypes) {
+            mSelectedDevice = deviceTypes.firstOrNull()
+        }
+
+        val dropdownAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, deviceTypes)
+        binding.deviceDropdown.setAdapter(dropdownAdapter)
+        binding.deviceDropdown.setText(mSelectedDevice, false)
+
+        binding.deviceDropdown.setOnItemClickListener { _, _, position, _ ->
+            mSelectedDevice = deviceTypes[position]
+            mAdapter?.update(filteredVolumes(allVolumes))
+        }
+    }
+
+    private fun filteredVolumes(allVolumes: List<Volume>): List<Volume> {
+        val device = mSelectedDevice ?: return allVolumes
+        return allVolumes.filter { it.deviceType == device }
     }
 
     private val connection = object : ServiceConnection {
@@ -78,11 +103,14 @@ class VolumeSliderFragment : Fragment() {
     }
 
     private fun handleServiceConnected() {
-        mService?.let {
-            setupRecyclerView(it)
+        mService?.let { service ->
+            val allVolumes = service.getVolumes()
+            setupDeviceDropdown(allVolumes)
+            setupRecyclerView(filteredVolumes(allVolumes))
 
-            mService?.registerOnVolumeChangeListener(Handler(Looper.getMainLooper())) {
-                mAdapter?.update(it.getVolumes())
+            service.registerOnVolumeChangeListener(Handler(Looper.getMainLooper())) {
+                val updated = service.getVolumes()
+                mAdapter?.update(filteredVolumes(updated))
             }
         }
     }

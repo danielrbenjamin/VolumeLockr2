@@ -68,14 +68,15 @@ class VolumeProvider(private val mContext: Context) {
     private fun getDeviceTypes(): List<String> {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val devices = mAudioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-            val deviceTypes = devices.map { device ->
+            val deviceTypes = devices.mapNotNull { device ->
                 when (device.type) {
                     AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> "Speaker"
                     AudioDeviceInfo.TYPE_WIRED_HEADPHONES, AudioDeviceInfo.TYPE_WIRED_HEADSET -> "Headphones"
-                    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> "Bluetooth"
-                    else -> "Unknown"
+                    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, AudioDeviceInfo.TYPE_BLUETOOTH_SCO ->
+                        device.productName.toString().takeIf { it.isNotBlank() } ?: "Bluetooth"
+                    else -> null
                 }
-            }.distinct().filter { it != "Unknown" }
+            }.distinct()
             if (deviceTypes.isNotEmpty()) {
                 return deviceTypes
             }

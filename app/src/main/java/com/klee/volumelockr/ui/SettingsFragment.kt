@@ -38,6 +38,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private lateinit var passwordProtected: SwitchPreferenceCompat
     private lateinit var passwordChange: Preference
     private lateinit var shouldAllowLower: SwitchPreferenceCompat
+    private lateinit var manageDevices: Preference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -46,6 +47,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         shouldAllowLower = findPreference(ALLOW_LOWER_PREFERENCE)!!
         passwordChange = findPreference(PASSWORD_CHANGE_PREFERENCE)!!
         passwordProtected = findPreference(PASSWORD_PROTECTED_PREFERENCE)!!
+        manageDevices = findPreference("manage_devices")!!
 
         shouldAllowLower.setOnPreferenceChangeListener { preferences, _ ->
             VolumeService.start(preferences.context)
@@ -67,6 +69,44 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
         passwordProtected.isEnabled = isPasswordSet()
+
+        manageDevices.setOnPreferenceClickListener {
+            showDeviceHistoryDialog()
+            true
+        }
+    }
+
+    private fun showDeviceHistoryDialog() {
+        val context = requireContext()
+        val devices = VolumeService.loadStoredDeviceNames(context)
+
+        if (devices.isEmpty()) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.device_history_title)
+                .setMessage(R.string.device_history_empty)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.device_history_title)
+            .setItems(devices.toTypedArray()) { _, which ->
+                showDeleteDeviceConfirmation(devices[which])
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun showDeleteDeviceConfirmation(deviceName: String) {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.device_delete_title)
+            .setMessage(getString(R.string.device_delete_message, deviceName))
+            .setPositiveButton(R.string.delete) { _, _ ->
+                VolumeService.removeStoredDevice(requireContext(), deviceName)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun initializeEncryptedPrefs() {
